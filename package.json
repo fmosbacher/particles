@@ -1,0 +1,13 @@
+{
+  "name": "particles",
+  "version": "1.0.0",
+  "description": "Particle system simulation",
+  "main": "index.js",
+  "author": "Fernando Azevedo",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^7.4.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0"
+  }
+}
