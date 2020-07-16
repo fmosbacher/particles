@@ -10,12 +10,16 @@ export default class Vector2d {
     return this;
   }
 
-  static sub(vector, other) {
-    return new Vector2d(vector.x - other.x, vector.y - other.y);
+  static add(vector, other) {
+    return new Vector2d(vector.x + other.x, vector.y + other.y);
   }
 
-  static mult(vector, scalar) {
-    return new Vector2d(vector.x * scalar, vector.y * scalar);
+  sub(other) {
+    return new Vector2d(this.x - other.x, this.y - other.y);
+  }
+
+  static sub(vector, other) {
+    return new Vector2d(vector.x - other.x, vector.y - other.y);
   }
 
   mult(scalar) {
@@ -24,10 +28,22 @@ export default class Vector2d {
     return this;
   }
 
+  static mult(vector, scalar) {
+    return new Vector2d(vector.x * scalar, vector.y * scalar);
+  }
+
+  div(scalar) {
+    this.x /= scalar;
+    this.y /= scalar;
+    return this;
+  }
+
   limit(max) {
-    if (this.mag() > max) {
-      this.normalize().mult(max);
+    if (this.getMag() > max) {
+      return this.setMag(max);
     }
+
+    return this;
   }
 
   dist(other) {
@@ -35,12 +51,23 @@ export default class Vector2d {
   }
 
   normalize() {
-    this.x /= this.mag();
-    this.y /= this.mag();
+    const mag = this.getMag();
+
+    if (mag === 0) {
+      return new Vector2d();
+    }
+
+    this.x /= mag;
+    this.y /= mag;
     return this;
   }
 
-  mag() {
+  setMag(value) {
+    this.normalize().mult(value);
+    return this;
+  }
+
+  getMag() {
     return Math.hypot(this.x, this.y);
   }
 }

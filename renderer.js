@@ -14,15 +14,15 @@ export default class Renderer {
   }
 
   draw() {
-    this.ctx.fillStyle = '#223';
+    this.ctx.fillStyle = '#fff';
     this.ctx.fillRect(0, 0, this.screen.width, this.screen.height);
 
     this.particles.forEach((particle) => {
       const { x, y } = particle.pos;
 
-      this.ctx.fillStyle = '#888';
+      this.ctx.fillStyle = particle.color;
       this.ctx.beginPath();
-      this.ctx.ellipse(x, y, 5, 5, 0, 0, 2 * Math.PI);
+      this.ctx.ellipse(x, y, particle.size, particle.size, 0, 0, 2 * Math.PI);
       this.ctx.fill();
     });
   }

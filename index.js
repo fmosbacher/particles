@@ -6,12 +6,11 @@ const screen = {
   width: canvas.width,
   height: canvas.height,
 };
-
 const renderer = new Renderer(canvas);
-
 const particles = [];
 
-for (let i = 0; i < 2; i += 1) {
+// Array.from
+for (let i = 0; i < 300; i += 1) {
   const particle = new Particle(screen);
   particles.push(particle);
   renderer.addParticle(particle);
@@ -30,3 +29,5 @@ const run = () => {
 };
 
 run();
+
+document.addEventListener('click', run);
