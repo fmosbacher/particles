@@ -1,29 +1,40 @@
 export default class Renderer {
-  constructor(canvas, particles = []) {
-    this.canvas = canvas;
-    this.particles = particles;
-    this.ctx = canvas.getContext('2d');
-    this.screen = {
-      width: canvas.width,
-      height: canvas.height,
-    };
+  constructor(ctx, universe) {
+    this.ctx = ctx;
+    this.universe = universe;
   }
 
-  addParticle(particle) {
-    this.particles.push(particle);
+  clearBackground(color) {
+    const { width, height } = this.universe.size;
+
+    this.ctx.fillStyle = color;
+    this.ctx.fillRect(0, 0, width, height);
+  }
+
+  drawCircle({ x, y }, color, radius) {
+    this.ctx.strokeStyle = color;
+    this.ctx.fillStyle = color;
+    this.ctx.beginPath();
+    this.ctx.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
+    this.ctx.fill();
+  }
+
+  drawRadius({ x, y }, color, radius) {
+    this.ctx.strokeStyle = color;
+    this.ctx.beginPath();
+    this.ctx.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
+    this.ctx.lineWidth = 3;
+    this.ctx.stroke();
   }
 
   draw() {
-    this.ctx.fillStyle = '#fff';
-    this.ctx.fillRect(0, 0, this.screen.width, this.screen.height);
+    this.clearBackground('#fff');
 
-    this.particles.forEach((particle) => {
-      const { x, y } = particle.pos;
-
-      this.ctx.fillStyle = particle.color;
-      this.ctx.beginPath();
-      this.ctx.ellipse(x, y, particle.size, particle.size, 0, 0, 2 * Math.PI);
-      this.ctx.fill();
+    this.universe.particles.forEach((particle) => {
+      const color = this.universe.colorRules[particle.species];
+      this.drawCircle(particle.pos, color, particle.radius);
+      this.drawRadius(particle.pos, 'gray', particle.visibleArea.minRadius);
+      this.drawRadius(particle.pos, 'gray', particle.visibleArea.maxRadius);
     });
   }
 }
