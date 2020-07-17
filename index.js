@@ -12,10 +12,21 @@ const screen = {
 };
 
 // Environment configs
-const numParticles = 2;
-const numSpecies = 2;
+const numParticles = 300;
+const numSpecies = 4;
+const particleRadius = 3;
+const attractionRadiusRange = {
+  min: [
+    2 * particleRadius,
+    4 * particleRadius,
+  ],
+  max: [
+    10 * particleRadius,
+    40 * particleRadius,
+  ],
+};
 
-const universe = new Universe(screen, numSpecies);
+const universe = new Universe(screen, numSpecies, attractionRadiusRange);
 const renderer = new Renderer(context2d, universe);
 
 const particles = Array.from(
@@ -26,7 +37,7 @@ const particles = Array.from(
       Math.random() * screen.width,
       Math.random() * screen.height,
     );
-    return new Particle(initialPos, species);
+    return new Particle(initialPos, particleRadius, species);
   },
 );
 

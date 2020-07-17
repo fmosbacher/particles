@@ -19,22 +19,12 @@ export default class Renderer {
     this.ctx.fill();
   }
 
-  drawRadius({ x, y }, color, radius) {
-    this.ctx.strokeStyle = color;
-    this.ctx.beginPath();
-    this.ctx.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
-    this.ctx.lineWidth = 3;
-    this.ctx.stroke();
-  }
-
   draw() {
     this.clearBackground('#fff');
 
     this.universe.particles.forEach((particle) => {
-      const color = this.universe.colorRules[particle.species];
+      const color = this.universe.colorMap[particle.species];
       this.drawCircle(particle.pos, color, particle.radius);
-      this.drawRadius(particle.pos, 'gray', particle.visibleArea.minRadius);
-      this.drawRadius(particle.pos, 'gray', particle.visibleArea.maxRadius);
     });
   }
 }

@@ -1,15 +1,18 @@
 import Vector2d from './vector2d.js';
 
 export default class Universe {
-  constructor(screen, numSpecies) {
+  constructor(screen, numSpecies, attractionRadiusRange) {
     this.size = screen;
     this.particles = [];
     this.numSpecies = numSpecies;
-    this.attractionRules = this.generateAttractionRules();
-    this.colorRules = this.generateColorRules();
-    this.friction = 0.1;
-    this.maxVel = 1;
-    this.maxForce = 0.05;
+    this.friction = 0.15;
+    this.attractionRadiusRange = attractionRadiusRange;
+
+    // Mapping for species
+    this.attractionMap = this.generateAttractionMap();
+    this.colorMap = this.generateColorMap();
+    this.minRadiusMap = this.generateMinRadiusMap();
+    this.maxRadiusMap = this.generateMaxRadiusMap();
   }
 
   addParticle(particle) {
@@ -18,62 +21,60 @@ export default class Universe {
 
   step() {
     this.particles.forEach((particle) => {
-      const interactionForce = new Vector2d();
+      const totalForce = new Vector2d();
 
       this.particles.forEach((other) => {
         if (other !== particle) {
           const dist = particle.pos.dist(other.pos);
-          let attraction = this.attractionRules[particle.species][other.species];
+          const minRadius = this.minRadiusMap[particle.species][other.species];
+          const maxRadius = this.maxRadiusMap[particle.species][other.species];
 
-          if (dist < particle.visibleArea.minRadius) {
-            attraction = Math.abs(attraction);
-          } else if (dist > particle.visibleArea.maxRadius) {
-            attraction = 0;
+          let attraction = 0;
+
+          if (dist < minRadius && dist > 0.2) {
+            // Forged random function to simulate repulsion
+            const smooth = 2;
+            attraction = smooth * minRadius * (1 / (minRadius + smooth) - 1 / (dist - smooth));
+          } else if (dist < maxRadius) {
+            attraction = this.attractionMap[particle.species][other.species] / (dist / 2);
           }
 
-          interactionForce.add(
-            Vector2d
-              .sub(other.pos, particle.pos)
-              .normalize()
-              .mult(attraction)
-              .limit(this.maxForce),
-          );
+          const interactionForce = Vector2d
+            .sub(other.pos, particle.pos)
+            .normalize()
+            .mult(attraction);
+
+          totalForce.add(interactionForce);
         }
       });
 
-      particle.applyForce(interactionForce);
-      particle.move(this.maxVel, this.friction);
-      particle.wrapPos(this.size);
+      particle.move(totalForce, this.friction);
+      // particle.wrapPos(this.size);
+      particle.bounceOnWall(this.size);
     });
   }
 
-  generateAttractionRules() {
-    const rules = [];
+  generateAttractionMap() {
+    const map = [];
 
     for (let i = 0; i < this.numSpecies; i += 1) {
-      rules[i] = [];
+      map[i] = [];
 
       for (let j = 0; j < this.numSpecies; j += 1) {
         const isSameSpecies = i === j;
 
         if (isSameSpecies) {
-          rules[i][j] = -Math.random();
+          map[i][j] = Math.random();
         } else {
-          const ruleAlreadyExist = rules[j] !== undefined && rules[j][i] !== undefined;
-
-          if (ruleAlreadyExist) {
-            rules[i][j] = rules[j][i];
-          } else {
-            rules[i][j] = Math.random() * 2 - 1;
-          }
+          map[i][j] = Math.random() * 2 - 1;
         }
       }
     }
 
-    return rules;
+    return map;
   }
 
-  generateColorRules() {
+  generateColorMap() {
     const colors = [];
     const hueDistance = 360 / this.numSpecies;
 
@@ -82,5 +83,29 @@ export default class Universe {
     }
 
     return colors;
+  }
+
+  generateMinRadiusMap() {
+    const [lower, upper] = this.attractionRadiusRange.min;
+
+    return Array.from(
+      { length: this.numSpecies },
+      () => Array.from(
+        { length: this.numSpecies },
+        () => Math.random() * (upper - lower) + lower,
+      ),
+    );
+  }
+
+  generateMaxRadiusMap() {
+    const [lower, upper] = this.attractionRadiusRange.max;
+
+    return Array.from(
+      { length: this.numSpecies },
+      () => Array.from(
+        { length: this.numSpecies },
+        () => Math.random() * (upper - lower) + lower,
+      ),
+    );
   }
 }
