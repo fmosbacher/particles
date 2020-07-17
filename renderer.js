@@ -1,13 +1,13 @@
 export default class Renderer {
-  constructor(ctx, universe) {
+  constructor(ctx, universe, backgroundColor) {
     this.ctx = ctx;
     this.universe = universe;
+    this.backgroundColor = backgroundColor;
   }
 
-  clearBackground(color) {
+  clearBackground() {
     const { width, height } = this.universe.size;
-
-    this.ctx.fillStyle = color;
+    this.ctx.fillStyle = this.backgroundColor;
     this.ctx.fillRect(0, 0, width, height);
   }
 
@@ -20,8 +20,7 @@ export default class Renderer {
   }
 
   draw() {
-    this.clearBackground('#fff');
-
+    this.clearBackground();
     this.universe.particles.forEach((particle) => {
       const color = this.universe.colorMap[particle.species];
       this.drawCircle(particle.pos, color, particle.radius);

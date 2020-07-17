@@ -1,56 +1,67 @@
 import Vector2d from './vector2d.js';
+import { random, randomGaussian } from './utils.js';
 
 export default class Universe {
-  constructor(screen, numSpecies, attractionRadiusRange) {
+  constructor(
+    screen,
+    {
+      numSpecies,
+      attractionRadiusRange,
+      friction,
+      maxAttraction,
+    },
+  ) {
     this.size = screen;
     this.particles = [];
     this.numSpecies = numSpecies;
-    this.friction = 0.15;
+    this.friction = friction;
     this.attractionRadiusRange = attractionRadiusRange;
+    this.maxAttraction = maxAttraction;
 
-    // Mapping for species
+    // Mapping for species interactions
     this.attractionMap = this.generateAttractionMap();
+    console.log(this.attractionMap);
     this.colorMap = this.generateColorMap();
-    this.minRadiusMap = this.generateMinRadiusMap();
-    this.maxRadiusMap = this.generateMaxRadiusMap();
+    const [minLower, minUpper] = this.attractionRadiusRange.min;
+    this.minRadiusMap = this.generateRadiusMap(minLower, minUpper);
+    const [maxLower, maxUpper] = this.attractionRadiusRange.max;
+    this.maxRadiusMap = this.generateRadiusMap(maxLower, maxUpper);
   }
 
   addParticle(particle) {
     this.particles.push(particle);
   }
 
+  // TODO: Separate into smaller functions
   step() {
     this.particles.forEach((particle) => {
       const totalForce = new Vector2d();
 
       this.particles.forEach((other) => {
         if (other !== particle) {
+          const forceDir = Vector2d.sub(other.pos, particle.pos).normalize();
           const dist = particle.pos.dist(other.pos);
           const minRadius = this.minRadiusMap[particle.species][other.species];
           const maxRadius = this.maxRadiusMap[particle.species][other.species];
 
-          let attraction = 0;
+          let attractionMag = 0;
 
-          if (dist < minRadius && dist > 0.2) {
-            // Forged random function to simulate repulsion
-            const smooth = 2;
-            attraction = smooth * minRadius * (1 / (minRadius + smooth) - 1 / (dist - smooth));
+          if (dist < minRadius) {
+            const smooth = 1;
+            attractionMag = smooth * minRadius * (1 / (minRadius + smooth) - 1 / (dist + smooth));
           } else if (dist < maxRadius) {
-            attraction = this.attractionMap[particle.species][other.species] / (dist / 2);
+            const numer = 2 * Math.abs(dist - (maxRadius + minRadius) / 2);
+            const denom = maxRadius - minRadius;
+            const interactionForce = this.attractionMap[particle.species][other.species];
+            attractionMag = interactionForce * (1 - numer / denom);
           }
 
-          const interactionForce = Vector2d
-            .sub(other.pos, particle.pos)
-            .normalize()
-            .mult(attraction);
-
-          totalForce.add(interactionForce);
+          totalForce.add(forceDir.mult(attractionMag));
         }
       });
 
       particle.move(totalForce, this.friction);
-      // particle.wrapPos(this.size);
-      particle.bounceOnWall(this.size);
+      particle.wrapPos(this.size);
     });
   }
 
@@ -63,11 +74,10 @@ export default class Universe {
       for (let j = 0; j < this.numSpecies; j += 1) {
         const isSameSpecies = i === j;
 
-        if (isSameSpecies) {
-          map[i][j] = Math.random();
-        } else {
-          map[i][j] = Math.random() * 2 - 1;
-        }
+        // map[i][j] = randomGaussian(-this.maxAttraction, this.maxAttraction);
+
+        if (isSameSpecies) map[i][j] = randomGaussian(0, this.maxAttraction);
+        else map[i][j] = randomGaussian(-this.maxAttraction, this.maxAttraction);
       }
     }
 
@@ -79,33 +89,26 @@ export default class Universe {
     const hueDistance = 360 / this.numSpecies;
 
     for (let i = 0; i < this.numSpecies; i += 1) {
-      colors.push(`hsl(${i * hueDistance}, 100%, 50%)`);
+      colors.push(`hsla(${i * hueDistance}, 100%, 50%, 70%)`);
     }
 
     return colors;
   }
 
-  generateMinRadiusMap() {
-    const [lower, upper] = this.attractionRadiusRange.min;
+  generateRadiusMap(lower, upper) {
+    const map = [];
 
-    return Array.from(
-      { length: this.numSpecies },
-      () => Array.from(
-        { length: this.numSpecies },
-        () => Math.random() * (upper - lower) + lower,
-      ),
-    );
-  }
+    for (let i = 0; i < this.numSpecies; i += 1) {
+      map[i] = [];
 
-  generateMaxRadiusMap() {
-    const [lower, upper] = this.attractionRadiusRange.max;
+      for (let j = 0; j < this.numSpecies; j += 1) {
+        const interactionIsMapped = map[j] !== undefined && map[j][i] !== undefined;
 
-    return Array.from(
-      { length: this.numSpecies },
-      () => Array.from(
-        { length: this.numSpecies },
-        () => Math.random() * (upper - lower) + lower,
-      ),
-    );
+        if (interactionIsMapped) map[i][j] = map[j][i];
+        else map[i].push(random(lower, upper));
+      }
+    }
+
+    return map;
   }
 }

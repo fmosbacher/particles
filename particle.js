@@ -3,7 +3,7 @@ import Vector2d from './vector2d.js';
 export default class Particle {
   constructor(initialPos, radius, species) {
     this.pos = initialPos;
-    this.vel = new Vector2d(Math.random() * 2 - 1, Math.random() * 2 - 1);
+    this.vel = new Vector2d();
     this.species = species;
     this.radius = radius;
   }
@@ -44,18 +44,12 @@ export default class Particle {
   }
 
   xAxisWrap(width) {
-    if (this.pos.x > width + this.radius) {
-      this.pos.x = -this.radius;
-    } else if (this.pos.x < -this.radius) {
-      this.pos.x = width + this.radius;
-    }
+    if (this.pos.x > width + this.radius) this.pos.x -= width;
+    else if (this.pos.x < -this.radius) this.pos.x += width;
   }
 
   yAxisWrap(height) {
-    if (this.pos.y > height + this.radius) {
-      this.pos.y = -this.radius;
-    } else if (this.pos.y < -this.radius) {
-      this.pos.y = height + this.radius;
-    }
+    if (this.pos.y > height + this.radius) this.pos.y -= height;
+    else if (this.pos.y < -this.radius) this.pos.y += height;
   }
 }
