@@ -39,10 +39,7 @@ export default class Vector2d {
   }
 
   limit(max) {
-    if (this.getMag() > max) {
-      return this.setMag(max);
-    }
-
+    if (this.getMag() > max) return this.setMag(max);
     return this;
   }
 
@@ -53,9 +50,7 @@ export default class Vector2d {
   normalize() {
     const mag = this.getMag();
 
-    if (mag === 0) {
-      return new Vector2d();
-    }
+    if (mag === 0) return new Vector2d();
 
     this.x /= mag;
     this.y /= mag;
@@ -69,5 +64,12 @@ export default class Vector2d {
 
   getMag() {
     return Math.hypot(this.x, this.y);
+  }
+
+  rotate(rad) {
+    const { x, y } = this;
+    this.x = x * Math.cos(rad) - y * Math.sin(rad);
+    this.y = x * Math.sin(rad) + y * Math.cos(rad);
+    return this;
   }
 }

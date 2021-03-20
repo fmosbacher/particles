@@ -35,30 +35,30 @@ export default class Universe {
   // TODO: Separate into smaller functions
   step() {
     this.particles.forEach((particle) => {
-      const totalForce = new Vector2d();
+      const totalForce = new Vector2d(Math.random() * 2 - 1, Math.random() * 2 - 1);
 
-      this.particles.forEach((other) => {
-        if (other !== particle) {
-          const forceDir = Vector2d.sub(other.pos, particle.pos).normalize();
-          const dist = particle.pos.dist(other.pos);
-          const minRadius = this.minRadiusMap[particle.species][other.species];
-          const maxRadius = this.maxRadiusMap[particle.species][other.species];
+      // this.particles.forEach((other) => {
+      //   if (other !== particle) {
+      //     const forceDir = Vector2d.sub(other.pos, particle.pos).normalize();
+      //     const dist = particle.pos.dist(other.pos);
+      //     const minRadius = this.minRadiusMap[particle.species][other.species];
+      //     const maxRadius = this.maxRadiusMap[particle.species][other.species];
 
-          let attractionMag = 0;
+      //     let attractionMag = 0;
 
-          if (dist < minRadius) {
-            const smooth = 1;
-            attractionMag = smooth * minRadius * (1 / (minRadius + smooth) - 1 / (dist + smooth));
-          } else if (dist < maxRadius) {
-            const numer = 2 * Math.abs(dist - (maxRadius + minRadius) / 2);
-            const denom = maxRadius - minRadius;
-            const interactionForce = this.attractionMap[particle.species][other.species];
-            attractionMag = interactionForce * (1 - numer / denom);
-          }
+      //     if (dist < minRadius) {
+      //       const smooth = 1;
+      //       attractionMag = smooth * minRadius * (1 / (minRadius + smooth) - 1 / (dist + smooth));
+      //     } else if (dist < maxRadius) {
+      //       const numer = 2 * Math.abs(dist - (maxRadius + minRadius) / 2);
+      //       const denom = maxRadius - minRadius;
+      //       const interactionForce = this.attractionMap[particle.species][other.species];
+      //       attractionMag = interactionForce * (1 - numer / denom);
+      //     }
 
-          totalForce.add(forceDir.mult(attractionMag));
-        }
-      });
+      //     totalForce.add(forceDir.mult(attractionMag));
+      //   }
+      // });
 
       particle.move(totalForce, this.friction);
       particle.wrapPos(this.size);

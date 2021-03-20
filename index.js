@@ -2,7 +2,7 @@ import Renderer from './renderer.js';
 import Universe from './universe.js';
 import Particle from './particle.js';
 import Vector2d from './vector2d.js';
-import { random } from './utils.js';
+import { random, randomGaussian } from './utils.js';
 
 // Canvas configs
 const canvas = document.querySelector('canvas');
@@ -10,21 +10,21 @@ const context2d = canvas.getContext('2d');
 const screen = { width: canvas.width, height: canvas.height };
 
 // Environment configs
-const numParticles = 1100;
+const numParticles = 15000;
 const particleRadius = 2;
-const spawningAreaInPercent = 0.6;
+const spawningAreaInPercent = 0.7;
 const universeParams = {
-  numSpecies: 5,
+  numSpecies: 4,
   attractionRadiusRange: {
-    min: [7 * particleRadius, 14 * particleRadius],
-    max: [15 * particleRadius, 50 * particleRadius],
+    min: [6 * particleRadius, 8 * particleRadius],
+    max: [8 * particleRadius, 20 * particleRadius],
   },
-  friction: 0.8,
-  maxAttraction: 12,
+  friction: 1,
+  maxAttraction: 1,
 };
 
 const universe = new Universe(screen, universeParams);
-const renderer = new Renderer(context2d, universe, '#000');
+const renderer = new Renderer(context2d, universe, 'rgba(0, 0, 0, 1)');
 
 const particles = Array.from(
   { length: numParticles },
@@ -53,3 +53,27 @@ const run = () => {
 };
 
 run();
+
+// User interactions
+
+let selectedSpeciesToAdd = 0;
+
+canvas.addEventListener('mousedown', (event) => {
+  if (selectedSpeciesToAdd !== undefined) {
+    const { offsetX, offsetY } = event;
+    for (let i = 0; i < 10; i += 1) {
+      const pos = new Vector2d(offsetX + randomGaussian(-20, 20),
+        offsetY + randomGaussian(-20, 20));
+      const particle = new Particle(pos, particleRadius, selectedSpeciesToAdd);
+      universe.addParticle(particle);
+    }
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  const species = parseInt(event.code.replace('Digit', ''), 10) - 1;
+  console.log(species);
+  if (species >= 0 && species <= universeParams.numSpecies) {
+    selectedSpeciesToAdd = species;
+  }
+});

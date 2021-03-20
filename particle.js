@@ -4,13 +4,17 @@ export default class Particle {
   constructor(initialPos, radius, species) {
     this.pos = initialPos;
     this.vel = new Vector2d();
+    this.acc = new Vector2d();
     this.species = species;
     this.radius = radius;
   }
 
   move(force, friction) {
-    this.vel.add(force).mult(1 - friction);
+    this.acc.add(force);
+    this.acc.add(Vector2d.mult(this.vel, -friction));
+    this.vel.add(this.acc).limit(1);
     this.pos.add(this.vel);
+    this.acc.mult(0);
   }
 
   bounceOnWall({ width, height }) {
